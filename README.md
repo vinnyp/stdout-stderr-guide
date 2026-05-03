@@ -4,6 +4,8 @@
 
 A hands-on, multi-language guide to stdout and stderr discipline. Run the demos, watch the pipes break, understand why — then carry the rules into every project you write.
 
+Primary references for the norms discussed here — POSIX stream semantics, GNU and Google CLI guidance, and selected practice articles — are collected in [**Works cited**](#works-cited). [**Resources**](#resources) lists extra manuals and tutorials (shell redirection, buffering, Python `logging`, Node streams) that complement the demos but are not required reading.
+
 ---
 
 ## The origin: why stderr exists at all
@@ -49,9 +51,25 @@ stderr (fd 2)  =  Your program's VOICE
 
 **`stderr` does not mean invisible.** Without a redirect, both streams appear on your terminal and look identical. The difference only surfaces when you pipe — which is exactly when it matters.
 
-**Error messages always go to stderr — no exceptions.** Even a script that writes clean data to stdout will silently corrupt a pipeline if it prints its error message to stdout and exits 0.
+[**POSIX**](https://pubs.opengroup.org/onlinepubs/9699919799/functions/stderr.html) defines **standard error** as the stream **for writing diagnostic output** (alongside **standard input** for conventional input and **standard output** for conventional output). That separation is exactly what keeps pipelines machine-readable: diagnostics do not belong in the primary result stream sent to a pipe or file.
+
+**Diagnostics and failures belong on stderr** — errors, warnings, progress that is not part of the primary payload, and usage text printed because the user invoked the program incorrectly. Even a script that writes clean data to stdout will corrupt a pipeline if it prints failures on stdout and exits `0`.
+
+**Exception developers routinely rely on:** informational output that *is* the requested result of the invocation — notably **`--help`** and **`--version`** when the user asks for them explicitly — is widely treated as **conventional output on stdout** with exit code `0`, consistent with GNU CLI expectations and common practice; by contrast, usage summaries emitted because of **invalid or missing arguments** are diagnostics and belong on **stderr** with a nonzero exit (see GNU *Coding Standards* on command-line interfaces and error formatting; Stack Overflow discussion of stdout/stderr conventions).[^node-help]
+
+[^node-help]: The sample **`dirlist.js`** in this repo uses minimal manual argument parsing and does **not** implement optional **`--help` / `--version`** handling on stdout. That keeps the script small; production CLIs should follow the GNU pattern above.
 
 **Exit codes are your program's verdict.** `0` means success. Non-zero means failure. Always set them explicitly on error — a program that exits `0` after failing silently corrupts pipelines and automation. See the exit codes section below for which non-zero code to use.
+
+### How this relates to “logs as streams” (Twelve-Factor App)
+
+The [Twelve-Factor App **logs** factor](https://12factor.net/logs) describes processes emitting **logs as a single stream** for the execution environment to route — a pattern tuned to **long-running services** in containers and platforms. **Unix CLI tools** still normally keep **primary, pipeable output** on stdout and **human-directed diagnostics** on stderr so downstream commands are not polluted. This repository’s demos follow that **CLI / pipeline** model; service-wide log aggregation is a different layer (often consuming whatever stream or socket the platform attaches).
+
+### Brief pointers to broader practice
+
+- **Google Shell Style Guide:** route errors to stderr so normal output stays separable (for example via a small `err()` helper that redirects to fd 2).
+- **Greg’s Wiki (BashFAQ/002):** Bash redirection semantics and capturing command output — relevant to getting redirects right (including the order-of-evaluation note in the cheatsheet below).
+- **Community Q&A:** Unix & Linux Stack Exchange threads on when stderr is appropriate and on placing progress or status output so it does not corrupt redirected primary output (see works cited).
 
 ---
 
@@ -156,7 +174,7 @@ Exit codes are the third leg of the I/O contract, alongside stdout and stderr. A
 
 ### The GNU convention
 
-This is what `grep`, `diff`, `ls`, `curl`, and most Unix tools follow — and what this project uses:
+This is what `grep`, `diff`, `ls`, `curl`, and many Unix tools follow — and what this project uses. It aligns with the broader idea that callers can branch on exit status while treating stdout as the successful **data** channel when status is zero:
 
 | Code | Meaning | When to use |
 |---|---|---|
@@ -244,3 +262,69 @@ some-cmd >file 2>&1
 ```
 
 The rule: **redirect stdout first, then point stderr at it.** If you write `2>&1` before `>file`, stderr locks on to the terminal before stdout has been moved.
+
+---
+
+## Resources
+
+These links go deeper than this README: official manuals, language docs, and articles that explain *mechanisms* (how Bash applies redirections, how libc buffers streams, how to configure Python or Node). Use them when you are implementing or debugging real programs — not as competing “style guides.” Items already listed in [Works cited](#works-cited) are summarized here only when they serve a different purpose (e.g. BashFAQ as tutorial vs citation).
+
+### Shell and POSIX utilities
+
+- **[GNU Bash Manual — Redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)** — Authoritative description of how Bash parses `>`, `>>`, `2>`, `2>&1`, here-documents, and moving file descriptors. Read this when the cheatsheet above is not enough or when behaviour differs between interactive shells and scripts.
+
+- **[Greg’s Wiki — BashFAQ/002](https://mywiki.wooledge.org/BashFAQ/002)** — Practical patterns: capturing stdout in a variable, avoiding subshell pitfalls, and understanding why naive redirects fail. Essential when wiring demos into larger Bash automation.
+
+- **[The Open Group — `cat` utility](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/cat.html)** — POSIX text for a utility whose **standard output** is “conventional output.” Useful background for what “primary output of the command” means in formal specs (compare with stderr for diagnostics on the [stderr](https://pubs.opengroup.org/onlinepubs/9699919799/functions/stderr.html) page).
+
+### Streams, buffering, and behaviour
+
+- **[Why stdout is faster than stderr? (Orhun)](https://blog.orhun.dev/stdout-vs-stderr/)** — Short article on buffering defaults and write paths in typical libc setups. Helps explain intermittent “delayed” stdout lines when piping or redirecting to files, and why stderr often feels more “immediate” on a terminal.
+
+### Python
+
+- **[Python — Logging HOWTO](https://docs.python.org/3/howto/logging.html)** — How to route `logging` to stderr, set levels and handlers, and avoid spraying diagnostics on stdout by accident. Pairs directly with the Python demo’s `--use-logging` mode.
+
+### Node.js
+
+- **[Node.js — `process.stdout` / `process.stderr`](https://nodejs.org/api/process.html#processstdout)** — Official API reference for the streams behind `console.log` / `console.error`. Use when tuning encoding, buffering, or attaching transports (e.g. Winston) without guessing behaviour.
+
+### Teaching-oriented redirection primer
+
+- **[Seneca Polytechnic — Redirections and read/write to files](https://pressbooks.senecapolytechnic.ca/uli101/chapter/week-5-redirections-and-read-read-to-files/)** — Introductory chapter with exercises and diagrams. Good if you are onboarding someone who has never seen `2>` or `2>&1` and needs a slower walkthrough than this repo’s experiment ladder.
+
+---
+
+## Works cited
+
+References are listed for attribution and further reading. URLs were verified as of the documentation update; if a link moves, search by title and publisher.
+
+### Standards and canonical specifications
+
+- **IEEE / The Open Group.** *The Open Group Base Specifications Issue 7, 2018 edition* (IEEE Std 1003.1-2017). Defines the standard streams: stdin for conventional input, stdout for conventional output, stderr for diagnostic output (including buffering expectations). Stream definitions: [stdin, stdout, stderr](https://pubs.opengroup.org/onlinepubs/9699919799/functions/stderr.html).
+
+### GNU Project
+
+- **GNU Project.** *GNU Coding Standards.* Section “Standards for Command Line Interfaces” (programs should support `--help` and `--version`; CLI consistency). [Command-Line Interfaces](https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html).
+- **GNU Project.** *GNU Coding Standards.* Section “Formatting Error Messages” (noninteractive error message shape; usage messages capitalized, etc.). [Errors](https://www.gnu.org/prep/standards/html_node/Errors.html).
+
+### Shell and tooling style guides
+
+- **Google.** *Google Shell Style Guide.* Error reporting and separation from normal output (stderr). [Shell Style Guide](https://google.github.io/styleguide/shellguide.html).
+- **GreyCat et al.** *Greg’s Wiki — BashFAQ/002: How can I redirect the output of a command to a variable?* Bash redirection and subshell behaviour (widely used reference for shell I/O). [BashFAQ/002](https://mywiki.wooledge.org/BashFAQ/002).
+
+### Essays, methodology, and historical discussion
+
+- **McIlroy, Doug.** Introduction and commentary in *A Research UNIX Reader: Annotated Excerpts from the Programmer’s Manual, 1971–1986* (Bell Laboratories). Primary-source discussion of diagnostics on standard output before stderr, pipes, and the introduction of standard error; quotation in this README is taken from McIlroy’s introduction.
+
+- **Twelve-Factor App.** *Logs* — treat logs as event streams; export to stdout (and let the environment route). [12factor.net/logs](https://12factor.net/logs). *(Contrast with CLI pipeline discipline in the section “How this relates to logs as streams” above.)*
+
+### Community Q&A (illustrative practice, not normative standards)
+
+- **Kusalananda et al.** “When to use standard error stream in command-line application?” *Unix & Linux Stack Exchange*, 12 Jan. 2017. [Discussion](https://unix.stackexchange.com/questions/336983/when-to-use-standard-error-stream-in-command-line-application).
+
+- **Szonye et al.** “Do progress reports / logging information belong on stderr or stdout?” *Unix & Linux Stack Exchange*, 21 Dec. 2016. [Discussion](https://unix.stackexchange.com/questions/331611/do-progress-reports-logging-information-belong-on-stderr-or-stdout).
+
+- **Various authors.** “What are the conventions for stdout/stderr messages?” *Stack Overflow*, Feb. 2010. [Discussion](https://stackoverflow.com/questions/7977852/what-are-the-conventions-for-stdout-stderr-messages) (includes `--help` / usage stream conventions often cited alongside GNU practice).
+
+- **jk., Stephen Kitt et al.** “What was the point of separating stdout and stderr?” *Retrocomputing Stack Exchange*, 28 Jun. 2019. Historical context for distinct streams. [Discussion](https://retrocomputing.stackexchange.com/questions/11499/what-was-the-point-of-separating-stdout-and-stderr).

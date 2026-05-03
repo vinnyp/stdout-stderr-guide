@@ -13,7 +13,7 @@
 
 ## Python
 - `print()` for data output only
-- Diagnostics use the `logging` module (`logging.basicConfig(stream=sys.stderr)`)
+- Diagnostics belong on stderr: either `print(..., file=sys.stderr)` at small scale or the `logging` module with `logging.basicConfig(stream=sys.stderr)` (preferred as complexity grows)
 - Never use plain `print()` for diagnostic messages — missing `file=sys.stderr` is silent corruption
 
 ## Node.js
@@ -24,7 +24,7 @@
 
 ## General
 - **Identify yourself** — every diagnostic line must include the program's own name as a prefix (e.g. `dirlist: warning: permission denied`). In a pipeline, diagnostics from multiple programs share the same terminal simultaneously; without a name prefix you cannot tell which program produced which message. This is why `ls` says `ls: nothere: No such file or directory`, not just `nothere: No such file or directory`.
-- Error messages always go to stderr, even in scripts that otherwise write everything to stdout
+- **Diagnostics and failures belong on stderr** — including usage text printed because of invalid or missing arguments. The usual exception: when the user explicitly requests **`--help`** or **`--version`**, treat that output as conventional **stdout** with exit `0` (GNU CLI practice); usage emitted for bad invocations stays on stderr with a nonzero exit.
 
 ## Exit codes (GNU convention)
 Follow the same convention used by `grep`, `diff`, `ls`, and most Unix tools:

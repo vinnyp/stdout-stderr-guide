@@ -84,7 +84,7 @@ $ ./dirlist.sh --wrong-output ~/Projects | wc -l
 5032 lines         ← 5 phantom lines from [INFO] noise
 ```
 
-**Difference: 5 phantom lines** — the 3 `[INFO]` lines, 1 `[WARN]` simulation, and 1 separator that were written to stdout instead of stderr.
+**Difference: 5 phantom lines** — in wrong mode, `dirlist.sh` writes **five** non-directory lines to stdout before any `private/` handling: two `[INFO]` lines at the start (scan + timestamp), then after the directory list three more `[INFO]` lines (summary, rule-of-thumb separator, closing hint). If a directory named `private` appears in the tree, a **`[WARN]`** line is also on stdout, and the phantom count increases by one.
 
 ---
 

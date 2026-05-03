@@ -84,8 +84,8 @@ def info_wrong(msg: str) -> None:
 
 
 def warn_wrong(msg: str) -> None:
-    """Wrong: warning → stdout. Same problem."""
-    print(f"[WARN]  {msg}")     # missing file=sys.stderr  ← the mistake
+    """Wrong: warning → stdout. Same problem (wrong stream; still includes PROG for identity)."""
+    print(f"[WARN]  {PROG}: {msg}")     # missing file=sys.stderr  ← the mistake
 
 
 # ── core logic ────────────────────────────────────────────────────────────────

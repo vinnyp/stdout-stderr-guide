@@ -55,8 +55,9 @@ Each language lives in its own subdirectory with **`dirlist`**, **`demo`**, and 
 ## Demo scripts
 - Experiments must run the subject program as a subprocess, not inline
 - stderr is suppressed (devnull) when isolating stdout output for display
-- All seven experiments must produce real numbers from the actual filesystem scan (experiment 7 exercises exit codes, not line counts)
-- Never hardcode counts — always derive them from subprocess output
+- Experiments **1–6** must derive line counts and pipe behaviour from a subprocess run against the caller-supplied path (never hardcoded totals)
+- Experiment **7** exercises exit codes with controlled invocations (success, missing args, nonexistent path) — not a full-tree scan
+- Never hardcode counts in demo scripts — always derive them from subprocess output
 
 ## Reports
 - Refresh when behaviour or copy changes: re-run the demo against a real tree and update representative counts and sample output so examples stay believable
