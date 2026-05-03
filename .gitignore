@@ -1,0 +1,20 @@
+# Node
+nodejs/node_modules/
+nodejs/package-lock.json
+
+# Temp log files generated during demos
+*.log
+
+# macOS
+.DS_Store
+
+# AI agent session files (contain local command history)
+.claude/
+.gemini/
+.agents/
+.cursor/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
