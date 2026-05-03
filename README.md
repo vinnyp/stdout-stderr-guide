@@ -57,13 +57,14 @@ stderr (fd 2)  =  Your program's VOICE
 
 ## What's inside
 
-Each language gets the same three files in its own directory:
+Each language directory includes a **`dirlist`**, a **`demo`**, and a **`demo-report.md`**. Node.js also ships **`package.json`** so `winston` installs cleanly.
 
 | File | Purpose |
 |---|---|
 | `dirlist.<ext>` | Recursively lists directories. Correct and `--wrong-output` modes. |
-| `demo.<ext>` | Runs 6 experiments that prove the difference with real pipe output. |
-| `demo-report.md` | Sidecar report with live results, commands, and explanations. |
+| `demo.<ext>` | Runs 7 experiments that prove the difference with real pipe output. |
+| `demo-report.md` | Sidecar report with commands, explanations, and representative outputs. |
+| `package.json` | *(Node.js only)* Manifest and `winston` dependency — run `npm install` before `demo.js`. |
 | *(7 experiments)* | Experiment 7 covers exit codes. |
 
 ```
@@ -104,23 +105,35 @@ npm install
 node demo.js /some/path
 ```
 
-Each demo runs 6 experiments against the path you provide and prints the results. You will see the phantom line counts appear live.
+Each demo runs 7 experiments against the path you provide and prints the results. You will see the phantom line counts appear live (experiments 1–6) plus exit-code behaviour (experiment 7).
 
 ---
 
-## The 6 experiments
+## The 7 experiments
 
-Every demo — in every language — runs the same sequence:
+**Shared across Bash, Python, and Node:** experiments **1**, **2**, and **4–7** use the same scenario in each language (raw output, `wc -l`, suppress/capture/merge stderr, exit codes).
+
+**Experiment 3 is stack-specific** (same slot, same goal — show how polluted stdout breaks tooling — but different mechanism):
+
+| Language | Experiment 3 |
+|---|---|
+| **Bash** | Pipe to **`grep`** — log lines match patterns meant for paths |
+| **Python** | **`logging` vs `print`** — routing and ergonomics |
+| **Node.js** | **`console.error` / winston vs `console.log`** — built-in stderr routing |
 
 | # | Experiment | What it shows |
 |---|---|---|
 | 1 | Raw output, no pipe | Without a pipe, both streams look identical on the terminal |
 | 2 | Pipe to `wc -l` | Wrong mode inflates the count with log noise |
-| 3 | Pipe to `grep` | Log lines match filters they were never meant to match |
+| 3 | *(see table above)* | Bash: `grep`; Python/Node: native vs library diagnostics |
 | 4 | Suppress stderr (`2>/dev/null`) | Silence diagnostics without affecting the data stream |
 | 5 | Capture stderr to a file (`2>file`) | Separate data from logs at the shell level |
 | 6 | Merge stderr into stdout (`2>&1`) | What intentional (or accidental) stream merging looks like |
 | 7 | Exit codes | `0` success, `1` runtime error, `2` usage error — live demonstration |
+
+### Phantom line counts differ by implementation
+
+The gap between **wrong mode** and **correct mode** line counts is **not** the same integer in every language: each `dirlist` emits a different number of diagnostic lines (and Bash includes an extra simulated WARN). What matters is that wrong mode adds **phantom** lines to the pipe — not matching the exact delta across stacks.
 
 ---
 

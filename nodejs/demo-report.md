@@ -222,6 +222,37 @@ $ node dirlist.js ~/Projects 2>&1 | wc -l
 
 ---
 
+## Experiment 7 — Exit codes
+
+Exit codes tell callers and pipelines whether a program succeeded. GNU convention: **`0`** success, **`1`** runtime error, **`2`** usage error.
+
+### Success — correct invocation
+
+```bash
+$ node dirlist.js ~/Projects >/dev/null 2>&1; echo $?
+0
+```
+
+### Usage error — no path argument
+
+```bash
+$ node dirlist.js
+```
+
+The CLI prints a missing-argument message to **stderr** and exits **`2`** (fix the invocation).
+
+### Runtime error — path does not exist
+
+```bash
+$ node dirlist.js /no/such/path
+```
+
+Arguments were valid; scanning fails. The program uses **`process.exit(EXIT_ERR)`** with exit **`1`** and writes the failure to stderr.
+
+Callers can branch: **`0`** proceed, **`1`** runtime failure, **`2`** usage mistake.
+
+---
+
 ## Summary
 
 ```
@@ -248,24 +279,12 @@ $ node dirlist.js ~/Projects 2>&1 | wc -l
 
 ---
 
-## Redirect cheatsheet
-
-| Redirect | Effect |
-|---|---|
-| `2>/dev/null` | Silence stderr |
-| `2>file.log` | Save stderr to a file |
-| `2>&1` | Merge stderr into stdout |
-| `1>/dev/null` | Silence stdout (when you only want logs) |
-| `>/dev/null 2>&1` | Silence everything |
-
----
-
 ## Files
 
 | File | Purpose |
 |---|---|
 | `dirlist.js` | Main script — lists directories recursively |
-| `demo.js` | Runs all 6 experiments side-by-side |
+| `demo.js` | Runs all 7 experiments side-by-side |
 | `package.json` | Project manifest (`winston` dependency) |
 
 ```bash

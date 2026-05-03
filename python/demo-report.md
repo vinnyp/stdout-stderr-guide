@@ -201,6 +201,39 @@ $ python dirlist.py ~/Projects 2>&1 | wc -l
 
 ---
 
+## Experiment 7 — Exit codes
+
+Exit codes tell callers and pipelines whether a program succeeded. GNU convention: **`0`** success, **`1`** runtime error, **`2`** usage error.
+
+With **`argparse`**, invalid or missing arguments produce stderr diagnostics and exit **`2`** automatically — you do not need extra boilerplate for usage errors.
+
+### Success — correct invocation
+
+```bash
+$ python dirlist.py ~/Projects >/dev/null 2>&1; echo $?
+0
+```
+
+### Usage error — no path argument
+
+```bash
+$ python dirlist.py
+```
+
+`argparse` prints its error to **stderr** and exits **`2`**.
+
+### Runtime error — path does not exist
+
+```bash
+$ python dirlist.py /no/such/path
+```
+
+After arguments parse successfully, a missing path triggers **`sys.exit`** with the runtime error code (**`1`**). Diagnostics stay on stderr.
+
+Callers can branch: **`0`** proceed, **`1`** treat as failed run / retry policy, **`2`** fix the command line.
+
+---
+
 ## Summary
 
 ```
@@ -225,24 +258,12 @@ $ python dirlist.py ~/Projects 2>&1 | wc -l
 
 ---
 
-## Redirect cheatsheet
-
-| Redirect | Effect |
-|---|---|
-| `2>/dev/null` | Silence stderr |
-| `2>file.log` | Save stderr to a file |
-| `2>&1` | Merge stderr into stdout |
-| `1>/dev/null` | Silence stdout (when you only want logs) |
-| `>/dev/null 2>&1` | Silence everything |
-
----
-
 ## Files
 
 | File | Purpose |
 |---|---|
 | `dirlist.py` | Main script — lists directories recursively |
-| `demo.py` | Runs all 6 experiments side-by-side |
+| `demo.py` | Runs all 7 experiments side-by-side |
 
 ```bash
 # Re-run the demo against any path

@@ -2,7 +2,9 @@
 /**
  * demo.js — Side-by-side demonstration of stdout vs stderr in Node.js.
  *
- * Mirrors demo.sh and demo.py but highlights Node.js-specific behaviour:
+ * Aligns with demo.sh / demo.py for experiments 1–2 and 4–7; experiment 3 is the Node
+ * lesson (console vs winston) instead of Bash's grep pipe — see README.md.
+ * Highlights Node.js-specific behaviour:
  *   - console.log()  → stdout
  *   - console.error() → stderr (already correct, unlike Python's print())
  *   - process.stdout.write() / process.stderr.write() — lower-level primitives

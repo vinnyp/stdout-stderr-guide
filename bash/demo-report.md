@@ -142,15 +142,34 @@ $ ./dirlist.sh ~/Projects 2>&1 | wc -l
 
 ---
 
-## Redirect cheatsheet
+## Experiment 7 — Exit codes
 
-| Redirect | Effect |
-|---|---|
-| `2>/dev/null` | Silence stderr |
-| `2>file.log` | Save stderr to a file |
-| `2>&1` | Merge stderr into stdout |
-| `1>/dev/null` | Silence stdout (when you only want logs) |
-| `>/dev/null 2>&1` | Silence everything |
+Exit codes tell callers and pipelines whether a program succeeded. This project follows the GNU convention: **`0`** success, **`1`** runtime error (valid invocation but something failed — e.g. path not found), **`2`** usage error (wrong or missing arguments).
+
+### Success — correct invocation
+
+```bash
+$ ./dirlist.sh ~/Projects >/dev/null 2>&1; echo $?
+0
+```
+
+### Usage error — no path argument
+
+```bash
+$ ./dirlist.sh
+```
+
+The error message goes to **stderr**. Exit **`2`** signals “fix the call,” not “retry with different input.”
+
+### Runtime error — path does not exist
+
+```bash
+$ ./dirlist.sh /no/such/path
+```
+
+Invocation shape was valid; the path failed. Exit **`1`** — appropriate for missing files, permission denied, or other failures after parsing arguments.
+
+In scripts that compose pipelines, use **`set -o pipefail`** so a nonzero exit from any stage of the pipe is visible in `$?` instead of being masked by the last command.
 
 ---
 
@@ -159,7 +178,7 @@ $ ./dirlist.sh ~/Projects 2>&1 | wc -l
 | File | Purpose |
 |---|---|
 | `dirlist.sh` | Main script — lists directories recursively |
-| `demo.sh` | Runs all 6 experiments side-by-side |
+| `demo.sh` | Runs all 7 experiments side-by-side |
 
 ```bash
 # Re-run the demo against any path
