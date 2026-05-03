@@ -7,6 +7,14 @@ Every addition must serve a learning objective. No feature for its own sake.
 ## Structure
 Each language lives in its own subdirectory with **`dirlist`**, **`demo`**, and **`demo-report.md`**. Node.js adds **`package.json`** for the `winston` dependency.
 
+  README.md        — short landing: quick start, repo tree, links to docs/
+
+  docs/
+    guide.md           — narrative: history, core rules, seven experiments, language notes
+    reference.md       — exit-code tables + redirect cheatsheet (canonical shell redirect doc)
+    bibliography.md    — resources (manuals/tutorials) + works cited (attribution)
+    discipline.md      — copy-paste stdout/stderr + exit-code rules for other projects' agent files
+
   bash/
     dirlist.sh       — the subject program (recursive directory lister)
     demo.sh          — runs experiments and prints results
@@ -59,17 +67,29 @@ Each language lives in its own subdirectory with **`dirlist`**, **`demo`**, and 
 - Experiment **7** exercises exit codes with controlled invocations (success, missing args, nonexistent path) — not a full-tree scan
 - Never hardcode counts in demo scripts — always derive them from subprocess output
 
+## Project documentation (which file to edit)
+
+| File | Update when you… |
+|---|---|
+| **[README.md](README.md)** | Change the **one-line pitch**, **quick start** commands, or the **repository tree** / “what’s inside” table. Keep this file short; do not move long prose back here. |
+| **[docs/guide.md](docs/guide.md)** | Change **core rules** (POSIX, `--help` nuance, Twelve-Factor contrast), **experiment descriptions** (including experiment 3 split), **language-specific insights**, or **how to reuse** [discipline.md](docs/discipline.md). **Origin and “why this still matters”** live in [README.md](README.md) — edit those there so the landing page stays self-contained. |
+| **[docs/reference.md](docs/reference.md)** | Change **exit-code** conventions (`0`/`1`/`2`, `sysexits.h`, reserved shell codes) or the **redirect cheatsheet** / **order-of-evaluation** example. Demo reports should **link here** instead of duplicating redirect tables. |
+| **[docs/bibliography.md](docs/bibliography.md)** | Add/remove **Resources** links, or change **Works cited** (new standards, moved URLs, new Stack Exchange threads). |
+| **[docs/discipline.md](docs/discipline.md)** | Change the **short copy-paste rule set** (bash / Python / Node / general / exit codes) that other repos are meant to embed in agent instruction files. Keep it tight; long explanations belong in **guide.md** or **reference.md**. |
+
+Cross-links: after edits, grep for broken relative links (`docs/…`, `../README.md`). If a claim moves between guide and reference, update **both** the prose and **bibliography** citations so they still point to the right section.
+
 ## Reports
 - Refresh when behaviour or copy changes: re-run the demo against a real tree and update representative counts and sample output so examples stay believable
 - Numbers must never be invented without a demo run behind them — but paths (e.g. `~/Projects`) and transcripts may stay **representative** rather than pinning every run to one machine
 - Each report includes: core rule, per-experiment command + output + explanation,
   language-specific insight section, summary box, file index
-  (redirect patterns live in the root `README.md`, not duplicated in reports)
+  (redirect patterns and exit-code tables live in `docs/reference.md`, not duplicated in reports)
 - The language-specific insight section is mandatory — it is the reason the report exists
 
 ## Cross-language consistency
 When adding a new language, verify:
-- Same 7 experiments in the same order; experiment 3 follows the Bash/Python/Node split (grep vs native-vs-library lesson) unless you document a deliberate deviation in `README.md`
+- Same 7 experiments in the same order; experiment 3 follows the Bash/Python/Node split (grep vs native-vs-library lesson) unless you document a deliberate deviation in `docs/guide.md` (and mention it in `README.md` if the public summary changes)
 - Same --wrong-output flag name
 - Same simulated "private" directory warning
 - Report follows the same section structure as bash/demo-report.md and python/demo-report.md

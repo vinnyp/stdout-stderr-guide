@@ -3,7 +3,7 @@
 demo.py — Side-by-side demonstration of stdout vs stderr in Python.
 
 Aligns with demo.sh for experiments 1–2 and 4–7; experiment 3 is the Python lesson
-(logging vs print) instead of Bash's grep pipe — see README.md "The 7 experiments".
+(logging vs print) instead of Bash's grep pipe — see docs/guide.md § The 7 experiments.
 Also covers:
   - print() with and without file=sys.stderr
   - logging module (stderr by default)

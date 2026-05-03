@@ -6,7 +6,7 @@
 #   ./demo.sh [path]          (defaults to /tmp if no path given)
 #
 # Experiment 3 is "pipe to grep". Python/Node use the same slot for a language-specific
-# lesson — see README.md "The 7 experiments".
+# lesson — see docs/guide.md § The 7 experiments.
 
 set -uo pipefail
 # Note: -e (errexit) is intentionally omitted in the demo script because head -6

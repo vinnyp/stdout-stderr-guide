@@ -1,6 +1,8 @@
-# stdout / stderr Discipline
+# Stream discipline
 
 > stdout = data, stderr = voice, exit codes always explicit.
+
+Concise rules you can paste into another repo’s `AGENT.md`, `CLAUDE.md`, `GEMINI.md`, or similar. For the full story and demos, see [guide.md](guide.md).
 
 ## Core rules
 - stdout is for data only — anything a pipe or downstream tool will consume
